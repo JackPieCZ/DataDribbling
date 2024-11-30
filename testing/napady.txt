@@ -1,0 +1,8 @@
+- před začátkem playoff vědět leaderboard týmů a sázet na ten lepší (dát mu větší Prob v Kellyho kritériu)
+-udělat vývoj accuracy při zahrnutí X posledních výsledků do predikce
+- prohledaní parametrů které zvýší riziko špatné předpovědi
+
+- vypadá to že nejlepší feature pro logreg N, A jsou HSC, ASC, HFGM, AFGM, HFTM, AFTM, HFG3M, AFG3M
+- bookmaker pro OddsH používá pravděpodobně především
+    + HFGM, HFTM, HFG3M, AFGM, AFG3M, AFTM
+    - ASC, ADRB, AORB, HSC
