@@ -4,7 +4,7 @@ import pandas as pd
 season_number = int(input("Enter the season number: "))
 
 # Load the data from the "data" folder
-games = pd.read_csv('./data/games.csv')  # Adjust the path if necessary
+games = pd.read_csv('./data0-75-99/games.csv')  # Adjust the path if necessary
 
 # Filter for the specified season and regular season games (POFF = 0)
 season_games = games[(games['Season'] == season_number) & (games['POFF'] == 0)]
