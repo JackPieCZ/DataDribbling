@@ -77,7 +77,7 @@ def plot_team_trajectories(rolling_stats, pca, features, n_teams=None):
     Create visualizations of team trajectories in PCA space
     """
     # Create figure for trajectories
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+    fig, (ax1) = plt.subplots(1, 1, figsize=(20, 8))
 
     # Get list of teams to plot (either all or specified number)
     teams = rolling_stats['TeamID'].unique()
@@ -165,6 +165,6 @@ def analyze_team_evolution(games_df, window_size=5):
     return rolling_stats, pca, fig, trajectory_stats
 
 
-games_df = pd.read_csv('games.csv')
+games_df = pd.read_csv(r"D:\_FEL\SAN\project\DataDribbling\data_all\merged_games.csv")
 rolling_stats, pca, fig, trajectory_stats = analyze_team_evolution(games_df, window_size=5)
 plt.show()

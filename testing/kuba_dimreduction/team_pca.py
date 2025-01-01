@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # import seaborn as sns
 
 # Read the data
-players_df = pd.read_csv('./players.csv')
+players_df = pd.read_csv(r"D:\_FEL\SAN\project\DataDribbling\data_all\merged_players.csv")
 
 # Aggregate statistics by team
 team_stats = players_df.groupby('Team').agg({
@@ -84,11 +84,6 @@ loadings = pd.DataFrame(
     columns=[f'PC{i+1}' for i in range(len(features))],
     index=features
 )
-# plt.figure(figsize=(12, 8))
-# sns.heatmap(loadings, annot=True, cmap='RdBu', center=0)
-# plt.title('PCA Component Loadings')
-# plt.tight_layout()
-# plt.show()
 
 # Print explained variance ratios
 print("\nExplained variance ratio for each component:")

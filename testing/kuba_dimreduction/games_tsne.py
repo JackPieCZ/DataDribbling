@@ -3,15 +3,14 @@ t-SNE to cluster games based on team statistics and create a
 visualization that might reveal patterns in how games unfold. 
 Color-code points based on whether the home team won or lost
 """
-# from sklearn.cluster import KMeans
 import pandas as pd
 import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-# import seaborn as sns
-
-# Read and aggregate player statistics by game and team
 
 
 def aggregate_game_stats(players_df):
@@ -42,8 +41,8 @@ def aggregate_game_stats(players_df):
     return game_stats
 
 
-# Read the data
-players_df = pd.read_csv('players.csv')
+# players_df = pd.read_csv(r"D:\_FEL\SAN\project\DataDribbling\data3-07-09\players.csv")
+players_df = pd.read_csv('merged_players.csv')
 
 # Aggregate stats
 game_stats = aggregate_game_stats(players_df)
@@ -103,61 +102,34 @@ scatter = plt.scatter(X_tsne[:, 0], X_tsne[:, 1],
                       cmap='coolwarm',
                       alpha=0.6)
 
-plt.colorbar(scatter, label='Home Team Win (1) / Loss (0)')
-plt.title('t-SNE Visualization of Game Patterns')
-plt.xlabel('t-SNE Component 1')
-plt.ylabel('t-SNE Component 2')
+plt.colorbar(scatter).set_label(label='Home Team Loss (0) / Win (1)', size=15)
+# plt.title('t-SNE Visualization of Game Patterns')
+plt.xlabel('t-SNE component 1', fontsize=15)
+plt.ylabel('t-SNE component 2', fontsize=15)
 
 # Add point score difference as annotations for some interesting points
 for idx in range(len(X_tsne)):
     score_diff = games_df.iloc[idx]['Home_Points'] - games_df.iloc[idx]['Away_Points']
     # Show top 10% most extreme games
-    if abs(score_diff) > np.percentile(abs(games_df['Home_Points'] - games_df['Away_Points']), 90):
+    if abs(score_diff) > np.percentile(abs(games_df['Home_Points'] - games_df['Away_Points']), 99):
         plt.annotate(f'{score_diff:+}',
                      (X_tsne[idx, 0], X_tsne[idx, 1]),
                      xytext=(5, 5), textcoords='offset points',
-                     fontsize=8)
+                     fontsize=9)
 
 plt.grid(True, alpha=0.3)
 plt.show()
 
-# Additional analysis of clusters
+X_2d = X_tsne  # shape (n_samples, 2)
 
-# # Perform K-means clustering on t-SNE results
-# n_clusters = 4  # You can adjust this number
-# kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-# cluster_labels = kmeans.fit_predict(X_tsne)
+y = games_df['Home_Win']
 
-# # Create visualization with clusters
-# plt.figure(figsize=(12, 8))
-# for i in range(n_clusters):
-#     mask = cluster_labels == i
-#     plt.scatter(X_tsne[mask, 0], X_tsne[mask, 1],
-#                 label=f'Cluster {i+1}',
-#                 alpha=0.6)
+X_train, X_test, y_train, y_test = train_test_split(X_2d, y, test_size=0.3, random_state=42)
 
-# plt.title('t-SNE Visualization with Clusters')
-# plt.xlabel('t-SNE Component 1')
-# plt.ylabel('t-SNE Component 2')
-# plt.legend()
-# plt.grid(True, alpha=0.3)
-# plt.show()
+clf = LogisticRegression()
+clf.fit(X_train, y_train)
 
-# # Analyze characteristics of each cluster
-# games_df['Cluster'] = cluster_labels
-# cluster_stats = []
+y_pred = clf.predict(X_test)
 
-# for i in range(n_clusters):
-#     cluster_games = games_df[games_df['Cluster'] == i]
-#     stats = {
-#         'Cluster': i+1,
-#         'Size': len(cluster_games),
-#         'Home_Win_Rate': cluster_games['Home_Win'].mean(),
-#         'Avg_Point_Diff': (cluster_games['Home_Points'] - cluster_games['Away_Points']).mean(),
-#         'Avg_Total_Points': (cluster_games['Home_Points'] + cluster_games['Away_Points']).mean(),
-#     }
-#     cluster_stats.append(stats)
-
-# cluster_summary = pd.DataFrame(cluster_stats)
-# print("\nCluster Statistics:")
-# print(cluster_summary)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Přesnost separace výher/proher na základě t-SNE: {accuracy:.2f}")

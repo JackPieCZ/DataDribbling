@@ -96,7 +96,8 @@ class BasketballPredictor:
             try:
                 features = self.prepare_features(row)
                 features_list.append(features)
-                target_list.append(row['HSC'] > row['ASC'])
+                target_list.append(row['H'])
+                # target_list.append(row['HSC'] > row['ASC'])
             except (KeyError, IndexError, ZeroDivisionError):
                 continue
 
@@ -197,24 +198,6 @@ class BasketballPredictor:
             'AID': away_team_id
         })
 
-        """
-        features = self.prepare_features(dummy_row)
-
-        # Ensure features are in a DataFrame with the same columns as training data
-        features_df = pd.DataFrame([features])
-        features_df = features_df[self.feature_columns]  # Reorder columns to match training data
-
-        # Scale features
-        features_scaled = pd.DataFrame(
-            self.scaler.transform(features_df),
-            columns=self.feature_columns
-        )
-        print(features_scaled)
-
-        # Add constant term
-        features_scaled = add_constant(features_scaled, prepend=True)
-        print(features_scaled)
-        """
         # Prepare features for the matchup
         features = self.prepare_features(dummy_row)
 

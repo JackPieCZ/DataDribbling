@@ -4,8 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-# Function to aggregate player statistics
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def aggregate_player_stats(df):
@@ -27,9 +26,9 @@ def aggregate_player_stats(df):
     }).reset_index()
 
     # Calculate additional metrics
-    player_stats['FG_PCT'] = (player_stats['FGM'] / player_stats['FGA']).fillna(0)
-    player_stats['FG3_PCT'] = (player_stats['FG3M'] / player_stats['FG3A']).fillna(0)
-    player_stats['FT_PCT'] = (player_stats['FTM'] / player_stats['FTA']).fillna(0)
+    player_stats['FG%'] = (player_stats['FGM'] / player_stats['FGA']).fillna(0)
+    player_stats['FG3%'] = (player_stats['FG3M'] / player_stats['FG3A']).fillna(0)
+    player_stats['FT%'] = (player_stats['FTM'] / player_stats['FTA']).fillna(0)
 
     return player_stats
 
@@ -56,25 +55,27 @@ def plot_pca_results(X_pca, pca, stats_df, features):
     # Create figure with subplots
     fig = plt.figure(figsize=(20, 10))
 
-    # Plot 1: Scatter plot of first two principal components
-    ax1 = fig.add_subplot(121)
-    scatter = ax1.scatter(X_pca[:, 0], X_pca[:, 1],
+    # Plot 1: 3D scatter plot of first three principal components
+    ax1 = fig.add_subplot(121, projection='3d')
+    scatter = ax1.scatter(X_pca[:, 0], X_pca[:, 1], X_pca[:, 2],
                           c=stats_df['PTS'], cmap='viridis',
                           alpha=0.6)
     ax1.set_xlabel('First Principal Component')
     ax1.set_ylabel('Second Principal Component')
-    ax1.set_title('Player Distribution in PCA Space')
+    ax1.set_zlabel('Third Principal Component')
+    ax1.set_title('Player Distribution in 3D PCA Space')
     plt.colorbar(scatter, label='Points per Game')
 
-    # Plot 2: Feature importance in first two PCs
+    # Plot 2: Feature importance in first three PCs
     ax2 = fig.add_subplot(122)
+    vars = [51.4, 17.7, 10]
     components = pd.DataFrame(
         pca.components_.T,
-        columns=[f'PC{i+1}' for i in range(len(features))],
+        columns=[f'PC{i+1} ({vars[i]}% var)' for i in range(len(features))],
         index=features
     )
-    sns.heatmap(components[['PC1', 'PC2']], cmap='RdBu', center=0, ax=ax2)
-    ax2.set_title('Feature Importance in First Two Principal Components')
+    sns.heatmap(components[['PC1 (51.4% var)', 'PC2 (17.7% var)', 'PC3 (10% var)']], cmap='RdBu', center=0, ax=ax2)
+    ax2.set_title('Feature Importance in First Three Principal Components')
 
     plt.tight_layout()
     plt.show()
@@ -89,20 +90,18 @@ def print_pca_analysis(pca, features, explained_variance_ratio):
         print(f"PC{i}: {ratio:.3f} ({ratio*100:.1f}%)")
     print(f"\nCumulative Variance Explained: {np.sum(explained_variance_ratio)*100:.1f}%\n")
 
-    # Print feature importance for first two components
+    # Print feature importance for first three components
     print("Feature Importance in Principal Components:")
     components_df = pd.DataFrame(
         pca.components_.T,
         columns=[f'PC{i+1}' for i in range(len(features))],
         index=features
     )
-    print("\nPC1 Feature Contributions:")
-    for feature, value in components_df['PC1'].sort_values(ascending=False).items():
-        print(f"{feature}: {value:.3f}")
 
-    print("\nPC2 Feature Contributions:")
-    for feature, value in components_df['PC2'].sort_values(ascending=False).items():
-        print(f"{feature}: {value:.3f}")
+    for i in range(1, 4):
+        print(f"\nPC{i} Feature Contributions:")
+        for feature, value in components_df[f'PC{i}'].sort_values(ascending=False).items():
+            print(f"{feature}: {value:.3f}")
 
 
 def analyze_player_archetypes(players_df):
@@ -111,16 +110,11 @@ def analyze_player_archetypes(players_df):
 
     # Define features for PCA
     features = ['MIN', 'PTS', 'RB', 'AST', 'STL', 'BLK', 'TOV',
-                'FG_PCT', 'FG3_PCT', 'FT_PCT']
+                'FG%', 'FG3%', 'FT%']
 
     # Perform PCA
     X_pca, pca, explained_variance = perform_pca_analysis(player_stats, features)
     print_pca_analysis(pca, features, explained_variance)
-    """
-    High positive values for BLK, FG_PCT, and RB mean this component strongly represents players who 
-    are good at blocking, efficient shooting, and rebounding
-    High negative values for AST and FG3_PCT suggest it contrasts with playmaking and three-point shooting
-    """
 
     # Create visualization
     plot_pca_results(X_pca, pca, player_stats, features)

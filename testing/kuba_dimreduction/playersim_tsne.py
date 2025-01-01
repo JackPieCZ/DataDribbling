@@ -50,10 +50,10 @@ def perform_tsne_analysis(data, features, perplexities=[5, 30, 50, 100], random_
 def plot_tsne_results(tsne_results, player_stats, color_feature='PTS'):
     # Create a figure with subplots for each perplexity value
     n_plots = len(tsne_results)
-    fig = plt.figure(figsize=(20, 5 * ((n_plots + 1) // 2)))
-
+    fig, ax = plt.subplots()
+    
     for idx, (perp, embedding) in enumerate(tsne_results.items(), 1):
-        ax = fig.add_subplot(((n_plots + 1) // 2), 2, idx)
+        # ax = fig.add_subplot(((n_plots + 1) // 2), 2, idx)
 
         scatter = ax.scatter(embedding[:, 0], embedding[:, 1],
                              c=player_stats[color_feature],
@@ -100,7 +100,7 @@ def analyze_clusters(tsne_results, player_stats, features):
                                      key=lambda x: max(abs(x[1][0]), abs(x[1][1])),
                                      reverse=True)
 
-        for feature, (corr1, corr2) in sorted_correlations[:5]:  # Show top 5 correlations
+        for feature, (corr1, corr2) in sorted_correlations:
             print(f"{feature}: Dim1={corr1:.3f}, Dim2={corr2:.3f}")
 
 
@@ -113,19 +113,19 @@ def analyze_player_similarity(players_df):
                 'FG_PCT', 'FG3_PCT', 'FT_PCT']
 
     # Perform t-SNE analysis
-    perplexities = [5, 30, 50, 100]
+    perplexities = [30]
     tsne_results, scaled_data = perform_tsne_analysis(player_stats, features, perplexities)
 
     # Create visualizations
     fig_points = plot_tsne_results(tsne_results, player_stats, 'PTS')
-    fig_assists = plot_tsne_results(tsne_results, player_stats, 'AST')
+    # fig_assists = plot_tsne_results(tsne_results, player_stats, 'AST')
 
     # Analyze cluster structure
     analyze_clusters(tsne_results, player_stats, features)
 
-    return player_stats, tsne_results, scaled_data, (fig_points, fig_assists)
+    # return player_stats, tsne_results, scaled_data, (fig_points, fig_assists)
 
 
-players_df = pd.read_csv('players.csv')
-player_stats, tsne_results, scaled_data, figures = analyze_player_similarity(players_df)
+players_df = pd.read_csv(r"D:\_FEL\SAN\project\DataDribbling\data_all\merged_players.csv")
+analyze_player_similarity(players_df)
 plt.show()
