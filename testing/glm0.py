@@ -25,57 +25,85 @@ def evaluate_model(model_name, y_test, y_pred, X_train):
 
     return y_test - y_pred
 
-def diagnostic_plots(y_pred, residuals):
+def diagnostic_plots(y_pred, residuals, save_path=None, file_format='pdf'):
+
+    sns.set_style("whitegrid")
+    sns.set_palette("muted")
 
     # Residuals vs Predicted Values Plot
     plt.figure(figsize=(10, 6))
-    plt.scatter(y_pred, residuals, alpha=0.6)
+    sns.scatterplot(x=y_pred, y=residuals, alpha=0.7, color="dodgerblue")
     plt.axhline(0, color='red', linestyle='--', linewidth=1)
-    plt.title("Residuals vs. Predicted values")
-    plt.xlabel("Predicted values")
-    plt.ylabel("Residuals")
-    plt.show()
+    plt.title("Residuals vs. Predicted values", fontsize=16)
+    plt.xlabel("Predicted values", fontsize=14)
+    plt.ylabel("Residuals", fontsize=14)
+    plt.grid(True, linestyle='--', linewidth=0.5)
+    #plt.show()
 
     # Histogram of Residuals
     plt.figure(figsize=(10, 6))
-    sns.histplot(residuals, kde=True, bins=30)
-    plt.title("Histogram of residuals")
-    plt.xlabel("Residuals")
-    plt.ylabel("Frequency")
+    sns.histplot(residuals, kde=True, bins=30, color="coral")
+    plt.title("Histogram of Residuals", fontsize=16)
+    plt.xlabel("Residuals", fontsize=14)
+    plt.ylabel("Frequency", fontsize=14)
+    plt.grid(True, linestyle='--', linewidth=0.5)
+    if save_path:
+        plt.savefig(save_path, format=file_format)
+        print(f"Graph saved to {save_path}")
     plt.show()
 
-    # Q-Q plot
+    # Q-Q Plot
     plt.figure(figsize=(10, 6))
-    probplot(residuals, dist="norm", plot=plt)
-    plt.title("Q-Q plot")
+    qq = probplot(residuals, dist="norm", plot=plt)
+    plt.gca().get_lines()[1].set_color('red')  
+    plt.gca().get_lines()[1].set_linestyle('--')  
+    plt.gca().get_lines()[0].set_color('steelblue')  
+    plt.title("Q-Q Plot", fontsize=14)
+    plt.xlabel("Theoretical Quantiles", fontsize=12)
+    plt.ylabel("Sample Quantiles", fontsize=12)
+    plt.grid(True, linestyle='--', alpha=0.7)
+    #if save_path:
+    #    plt.savefig(save_path, format=file_format)
+    #   print(f"Graph saved to {save_path}")
     plt.show()
 
-def display_coefficients_with_pvalues(model, feature_names, X, y):
+def display_coefficients_with_pvalues(model, feature_names, X, y, save_path=None, file_format='pdf'):
 
     _, p_values = f_regression(X, y)
 
-    # Combine coefficients and p-values into a DataFrame
     coefficients_info = pd.DataFrame({
         'Feature': feature_names,
         'Coefficient': model.coef_,
         'P-value': p_values
     })
-
-    # Sort by the magnitude of coefficients
     coefficients_info = coefficients_info.sort_values('Coefficient', ascending=False)
+    #coefficients_info = coefficients_info.reindex(coefficients_info['Coefficient'].abs().sort_values(ascending=False).index)
 
-    # Display coefficients and p-values
     print("\nCoefficients and P-values:")
     print(coefficients_info)
 
-    # Plot coefficients
+    pastel_orange = "coral" 
+    pastel_blue = "steelblue" 
+    colors = [
+        pastel_orange if coef > 0 else pastel_blue
+        for coef in coefficients_info['Coefficient']
+    ]
+
     plt.figure(figsize=(12, 6))
-    plt.bar(coefficients_info['Feature'], coefficients_info['Coefficient'], color='skyblue')
-    plt.xticks(rotation=45, ha='right')
-    plt.title('Coefficients of Features')
-    plt.xlabel('Features')
-    plt.ylabel('Coefficient Value')
+    plt.bar(
+        coefficients_info['Feature'],
+        coefficients_info['Coefficient'],
+        color=colors
+    )
+    plt.xticks(rotation=45, ha='right', fontsize=10)
+    plt.title('Coefficients of Features', fontsize=14)
+    plt.xlabel('Features', fontsize=12)
+    plt.ylabel('Coefficient Value', fontsize=12)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, format=file_format)
+        print(f"Graph saved to {save_path}")
     plt.show()
 
 def delete_outliers(X, y, threshold=4):
@@ -157,8 +185,8 @@ def remove_highly_correlated_features(X, y, features, correlated_features):
 
     # Loop through the correlated feature pairs and drop one feature from each pair
     for feature1, feature2 in correlated_features:
-        # Drop feature2 (you can choose to drop feature1 or make it more sophisticated)
-        features_to_drop.append(feature2)
+        # Drop feature2 
+        features_to_drop.append(feature1)
 
     # Drop the selected features from X
     X_clean = X.drop(columns=features_to_drop)
@@ -183,10 +211,9 @@ def linear_regression(X, y, features):
     # Make predictions on the test set
     y_pred = lin_reg.predict(X_test)
 
-
     residuals = evaluate_model("Linear Regression", y_test, y_pred, X_train)
-    display_coefficients_with_pvalues(lin_reg, features, X, y)
-    diagnostic_plots(y_pred, residuals)
+    display_coefficients_with_pvalues(lin_reg, features, X, y, save_path="coefficients_linreg.pdf")
+    diagnostic_plots(y_pred, residuals, save_path="residual_linreg.pdf")
 
 def polynomial_regression(X, y, features):
 
@@ -232,8 +259,8 @@ def lasso_regression(X, y, features):
     y_pred = lasso_cv.predict(X_test)
 
     residuals = evaluate_model("Lasso Regression", y_test, y_pred, X_train)
-    display_coefficients_with_pvalues(lasso_cv, features, X, y)
-    diagnostic_plots(y_pred, residuals)
+    display_coefficients_with_pvalues(lasso_cv, features, X, y, save_path="coefficients_lasso.pdf")
+    diagnostic_plots(y_pred, residuals, save_path="residual_lasso.pdf")
 
 def ridge_regression(X, y, features):
 
@@ -254,8 +281,8 @@ def ridge_regression(X, y, features):
     y_pred = ridge_cv.predict(X_test)
 
     residuals = evaluate_model("Ridge Regression", y_test, y_pred, X_train)
-    display_coefficients_with_pvalues(ridge_cv, features, X, y)
-    diagnostic_plots(y_pred, residuals)
+    display_coefficients_with_pvalues(ridge_cv, features, X, y, save_path="coefficients_ridge.pdf")
+    diagnostic_plots(y_pred, residuals, save_path="residual_ridge.pdf")
 
 def forward_stepwise_selection(X, y, features):
 
@@ -299,8 +326,8 @@ def forward_stepwise_selection(X, y, features):
     y_pred_forward = model_forward.predict(X_test_selected_forward)
 
     residuals_forward = evaluate_model("Forward Stepwise Selection", y_test, y_pred_forward, X_train)
-    diagnostic_plots(y_pred_forward, residuals_forward)
-    display_coefficients_with_pvalues(model_forward, selected_features_names_forward, X_selected_forward, y_train)
+    diagnostic_plots(y_pred_forward, residuals_forward, save_path="residual_forward.pdf")
+    display_coefficients_with_pvalues(model_forward, selected_features_names_forward, X_selected_forward, y_train, save_path="coefficients_forward.pdf")
 
 def backward_stepwise_selection(X, y, features):
 
@@ -344,11 +371,11 @@ def backward_stepwise_selection(X, y, features):
     y_pred_backward = model_backward.predict(X_test_selected_backward)
 
     residuals_backward = evaluate_model("Backward Stepwise Selection", y_test, y_pred_backward, X_train)
-    diagnostic_plots(y_pred_backward, residuals_backward)
-    display_coefficients_with_pvalues(model_backward, selected_features_names_backward, X_selected_backward, y_train)
+    diagnostic_plots(y_pred_backward, residuals_backward, save_path="residual_backward.pdf")
+    display_coefficients_with_pvalues(model_backward, selected_features_names_backward, X_selected_backward, y_train, save_path="coefficients_backward.pdf")
 
 # Load data
-games = pd.read_csv('./testing/data/games.csv')
+games = pd.read_csv('./testing/data/merged_games.csv') # All data
 #players = pd.read_csv('./testing/data/players.csv')
 
 # Features
@@ -357,7 +384,13 @@ features_game = ['H', 'A', 'N', 'POFF', 'HFGA', 'AFGA', 'HFG3M', 'AFG3M',
             'HDRB', 'ADRB', 'HRB', 'ARB', 'HAST', 'AAST', 'HSTL', 'ASTL',
             'HBLK', 'ABLK', 'HTOV', 'ATOV', 'HPF', 'APF'] # deleted HFGM, AFGM, HSC, ASC
 
+features_all = ['HFGM', 'AFGM', 'H', 'A', 'N', 'POFF', 'HFGA', 'AFGA', 'HFG3M', 'AFG3M',
+            'HFG3A', 'AFG3A', 'HFTM', 'AFTM', 'HFTA', 'AFTA', 'HORB', 'AORB',
+            'HDRB', 'ADRB', 'HRB', 'ARB', 'HAST', 'AAST', 'HSTL', 'ASTL',
+            'HBLK', 'ABLK', 'HTOV', 'ATOV', 'HPF', 'APF'] # delted HSC, ASC
+
 X = games[features_game]
+#X = games[features_all]
 y = games['HSC'] - games['ASC']  # score difference
 
 scaler = StandardScaler()
@@ -365,6 +398,7 @@ X_scaled = scaler.fit_transform(X)
 
 # first linear regression model
 linear_regression(X_scaled, y, features_game) 
+#linear_regression(X_scaled, y, features_all)
 
 # data cleaning
 X_0, y_0, outliers = delete_outliers(X_scaled, y)
@@ -374,7 +408,7 @@ vif_data, correlation_matrix, correlated_features = calculate_vif_and_correlatio
 X_clean, y_clean, remaining_features = remove_highly_correlated_features(X_0, y_0, features_game, correlated_features)
 
 linear_regression(X_clean, y_clean, remaining_features)
-polynomial_regression(X_clean, y_clean, remaining_features)
+#polynomial_regression(X_clean, y_clean, remaining_features)
 lasso_regression(X_clean, y_clean, remaining_features)
 ridge_regression(X_clean, y_clean, remaining_features)
 forward_stepwise_selection(X_clean, y_clean, remaining_features)
