@@ -1,0 +1,24 @@
+Team Performance Analysis:
+
+"Create a PCA analysis of team performance metrics (scoring, rebounds, assists, etc.) to identify the main playing styles and patterns among teams. Visualize the results using a scatter plot with team IDs, and analyze which statistical categories contribute most to the principal components."
+"Use t-SNE to cluster games based on team statistics and create a visualization that might reveal patterns in how games unfold. Color-code points based on whether the home team won or lost."
+
+Player Analysis:
+3. "Perform PCA on player performance metrics (points, rebounds, assists, etc.) to identify different player archetypes. Create a visualization showing how players cluster together based on their playing style."
+
+"Apply t-SNE to player statistics to create a player similarity map. Include feature scaling and try different perplexity values to find the most meaningful clustering of players."
+
+Temporal Analysis:
+5. "Using PCA, analyze how team performance metrics evolve over the season. Create a visualization showing the trajectory of teams in the reduced dimensional space across multiple games."
+
+"Apply t-SNE to game statistics grouped by months/seasons to visualize if there are any temporal patterns in how basketball is played at different times."
+
+Game Outcome Analysis:
+7. "Create a PCA model focusing specifically on the relationship between pre-game odds and actual game statistics. Visualize how well betting odds correlate with different aspects of game performance."
+
+"Use t-SNE to analyze close games vs blowouts by looking at all game statistics. Color-code points based on point difference and visualize if there are distinct patterns in how these different types of games unfold."
+
+Efficiency Analysis:
+9. "Perform PCA on efficiency metrics (shooting percentages, turnover rates, etc.) to identify which combinations of efficiency stats best characterize team performance. Create a biplot to show the relationships between different efficiency metrics."
+
+"Apply t-SNE to player efficiency metrics to cluster players based on their efficiency profiles rather than raw statistics. Color-code by playing time to see if there are patterns in efficiency based on player usage."
