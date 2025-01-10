@@ -3,7 +3,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 
 
-data = pd.read_csv('./data/season_1_matches.csv') 
+data = pd.read_csv('./data_all/predictions.csv') 
+
 # Create a DataFrame
 df = pd.DataFrame(data)
 
